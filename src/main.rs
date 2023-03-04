@@ -2,7 +2,7 @@ use std::thread::sleep;
 use std::time::Duration;
 use sysinfo::{CpuExt, System, SystemExt};
 
-const REFRESHTIME: Duration = Duration::from_secs(3);
+const REFRESH_TIME: Duration = Duration::from_secs(3);
 
 fn main() {
     let mut sys = System::new();
@@ -16,24 +16,14 @@ fn main() {
     loop {
         sys.refresh_cpu();
 
-        let scaled = cpu_usage(sys.cpus(), ncpu);
-        println!("{}%", scaled);
+        // Get the average CPU usage across all cores
+        let total = sys
+            .cpus()
+            .iter()
+            .fold(0.0, |sum, cpu| sum + cpu.cpu_usage());
+        let total = (total / ncpu).round();
 
-        sleep(REFRESHTIME);
+        println!("{total}%");
+        sleep(REFRESH_TIME);
     }
-}
-
-// cpu_usage calculates the average cpu usage across all cores
-// and returns a rounded percentage
-//
-// @param cpu: a slice of sysinfo::Cpu
-// @param ncpu: the number of cores
-// @return: the average cpu usage across all cores
-fn cpu_usage(cpus: &[sysinfo::Cpu], ncpu: f32) -> f32 {
-    let mut total = 0.0;
-    for cpu in cpus {
-        total += cpu.cpu_usage();
-    }
-
-    (total / ncpu).round()
 }
