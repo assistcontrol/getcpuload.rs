@@ -3,7 +3,6 @@ use std::time::Duration;
 use sysinfo::{CpuExt, CpuRefreshKind, RefreshKind, System, SystemExt};
 
 const REFRESH_TIME: Duration = Duration::from_secs(3);
-const B_TO_GB: u64 = 1024 * 1024 * 1024;
 
 fn main() {
     let refresh = RefreshKind::new()
@@ -18,9 +17,15 @@ fn main() {
         sys.refresh_specifics(refresh);
 
         let cpu = sys.global_cpu_info().cpu_usage().round();
-        let mem = sys.used_memory() / B_TO_GB;
+        let mem = to_gb(sys.used_memory());
 
         println!("{cpu}% {mem}G");
         sleep(REFRESH_TIME);
     }
+}
+
+fn to_gb(bytes: u64) -> f64 {
+    const B_TO_GB: f64 = 1024.0 * 1024.0 * 1024.0;
+
+    (bytes as f64 / B_TO_GB).round()
 }
